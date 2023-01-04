@@ -1,0 +1,13 @@
+# Group &#x1f3e5;病院
+
+## 病院情報 [/hospital-information/search/]
+病院一覧情報を取得します
+
+### 市区町村名検索 [GET /hospital-information/search/{municipality}]
+
++ Parameters
+  + municipality: 渋谷区 (string) - 市区町村名
+
++ Response 200 (application/json)
+    + Attributes
+        + hospitals (array[Hospital]) - 病院一覧

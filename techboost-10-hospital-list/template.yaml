@@ -1,0 +1,66 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  techboost-10-hospital-list
+
+  Sample SAM Template for techboost-10-hospital-list
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 5
+    MemorySize: 128
+    Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
+      Variables:
+        DB_USER: ca-techboost-10
+        DB_PASS: EhPiAEPqU3GHUH3fFF8Nt2i7bGaJ7M
+        DB_HOST: ca-techboost-backend.c9ml7do7yvmn.ap-northeast-1.rds.amazonaws.com
+        DB_NAME: ca-techboost-10
+
+Resources:
+  UpsertHospitalInformationFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: cmd/job/upsert-hospital-information
+      Handler: cmd/job/upsert-hospital-information
+      Runtime: go1.x
+      Architectures:
+      - x86_64
+      Events:
+        CatchAll:
+          Type: Schedule # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Schedule: "cron(0 10 * * ? *)"
+      Role: arn:aws:iam::880843126767:role/techboost-lambda
+  HospitalInformationFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: cmd/hospital/search-by-municipality
+      Handler: cmd/hospital/search-by-municipality
+      Runtime: go1.x
+      Architectures:
+      - x86_64
+      Events:
+        CatchAll:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /hospital-information/search/{municipality}
+            Method: GET
+      Role: arn:aws:iam::880843126767:role/techboost-lambda
+
+Outputs:
+  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
+  # Find out more about other implicit resources you can reference within SAM
+  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+  HelloWorldAPI:
+    Description: API Gateway endpoint URL for Prod environment for First Function
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hospital-information/"
+  UpsertHospitalInformationFunction:
+    Description: First Lambda Function ARN
+    Value: !GetAtt UpsertHospitalInformationFunction.Arn
+  HospitalInformationFunction:
+    Description: First Lambda Function ARN
+    Value: !GetAtt HospitalInformationFunction.Arn
+#  HelloWorldFunctionIamRole:
+#    Description: Implicit IAM Role created for Hello World function
+#    Value: !GetAtt HelloWorldFunctionRole.Arn
